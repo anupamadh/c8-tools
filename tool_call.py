@@ -38,18 +38,47 @@ messages = [{"role": "user", "content": question}]
 # Step 2. The card: fill in the two empty strings.
 card = {"type": "function", "function": {
     "name": "get_lecture",
-    "description": "",                                                    # Use it when
+    "description": "Returns one lecture of the 100xEngineers Cohort 8 curriculum: its date, title, type and tools. Use it when someone asks about a specific lecture by number. Not for general questions.",                                                    # Use it when
     "parameters": {"type": "object",
                    "properties": {"number": {"type": "integer",
-                                             "description": ""}},         # It needs
+                                             "description": "The lecture number, 1 to 19."}},         # It needs
                    "required": ["number"]},
 }}
 
-reply = ask_model(messages)                 # Step 2: send the card too
+reply = ask_model(messages, [card])                 # Step 2: send the card too
 print(json.dumps(reply, indent=2, ensure_ascii=False))
 
 # Step 3. Run the request the model wrote.
+# call = reply["tool_calls"][0]
+# # To retrieve the arguments key and convert the arguments from text to disctionary, use the following code:
+# args = json.loads(call["function"]["arguments"])
+# #pass the arguments to the get_lecture function as a key-value pair and store the result in a variable called result
+# result = get_lecture(**args)
+# print(result)
 
 # Step 4. Hand the result back to the model and print its answer.
+#Add the model's request to messages i.e the card
+# messages.append(reply)
+# #Add the result of the tool call to messages
+# messages.append({"role": "tool", "tool_call_id": call["id"], "content": json.dumps(result)})
+# #Call ask_model again with the updated messages and store the result in a variable called reply2
+# #This sends the full conversation back to the model. Now that it can see the row, it writes a normal answer instead of another request.
+# reply2 = ask_model(messages, [card])
+# #Print the content of reply2
+# print(reply2["content"])
+
 
 # Step 5. Turn steps 3 and 4 into a loop.
+reply = ask_model(messages, [card])
+
+while reply.get("tool_calls"):
+    messages.append(reply)
+    for call in reply["tool_calls"]:
+        args = json.loads(call["function"]["arguments"])
+        print("The model asked for: get_lecture", args)
+        result = get_lecture(**args)
+        messages.append({"role": "tool", "tool_call_id": call["id"], "content": json.dumps(result)})
+    reply = ask_model(messages, [card])
+
+print("\n" + reply["content"])
+
