@@ -18,6 +18,40 @@ def get_lecture(number):
             return {"date": row[0], "title": row[1], "type": row[2], "tools": row[3]}
     return {"error": f"There is no lecture {number}. Lectures run from 1 to 19."}
 
+ITINERARY = "https://docs.google.com/spreadsheets/d/1b5zDSCA7XX4NmVQZKdEzKumQJAaVBodMc-Vm3UwUniU/export?format=csv&gid=0"
+
+def get_itinerary(date):
+    plan = []
+    for row in csv.reader(io.StringIO(requests.get(ITINERARY).text)):
+        if row and row[0].strip().lower() == date.strip().lower():
+            plan.append({"day": row[1], "time": row[2], "activity": row[3], "description": row[5]})
+    if plan:
+        return {"date": date, "plan": plan}
+    return {"error": f"Nothing is planned for {date}. The trip runs from 1 Jan 2027 to 4 Jan 2027."}
+
+itinerary_card = {
+    "type": "function",
+    "function": {
+        "name": "get_itinerary",
+        "description": (
+            "Returns the Kuching, Sarawak trip plan for one day: the day, time, activity "
+            "and description of everything planned, including alternative options. "
+            "Use it when someone asks what is planned on a specific trip date. "
+            "Not for general questions about Sarawak."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "description": "The trip date written like the sheet, e.g. 1 Jan 2027. The trip runs 1 to 4 Jan 2027."
+                }
+            },
+            "required": ["date"]
+        }
+    }
+}
+
 # ---------- THE MODEL (given) ----------
 # One message to Groq, one message back. Nothing is added that you do not send.
 def ask_model(messages, tools=None):
@@ -44,8 +78,8 @@ card = {"type": "function", "function": {
                                              "description": "The lecture number, 1 to 19."}},         # It needs
                    "required": ["number"]},
 }}
-
-reply = ask_model(messages, [card])                 # Step 2: send the card too
+CARDS = [card, itinerary_card]
+reply = ask_model(messages, CARDS)                 # Step 2: send the cards too
 print(json.dumps(reply, indent=2, ensure_ascii=False))
 
 # Step 3. Run the request the model wrote.
@@ -69,16 +103,20 @@ print(json.dumps(reply, indent=2, ensure_ascii=False))
 
 
 # Step 5. Turn steps 3 and 4 into a loop.
-reply = ask_model(messages, [card])
+TOOLS = {"get_lecture": get_lecture, "get_itinerary": get_itinerary}
+
+
+reply = ask_model(messages, CARDS)
 
 while reply.get("tool_calls"):
     messages.append(reply)
     for call in reply["tool_calls"]:
+        name = call["function"]["name"]
         args = json.loads(call["function"]["arguments"])
-        print("The model asked for: get_lecture", args)
-        result = get_lecture(**args)
+        print("The model asked for:", name, args)
+        result = TOOLS[name](**args)
         messages.append({"role": "tool", "tool_call_id": call["id"], "content": json.dumps(result)})
-    reply = ask_model(messages, [card])
+    reply = ask_model(messages, CARDS)
 
 print("\n" + reply["content"])
 
