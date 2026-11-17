@@ -131,7 +131,7 @@ print("\n" + reply["content"])
 ```
 </details>
 
-### Step 6. Test the card
+### Step 6. Test the card: get_lecture
 
 The model reads only the card. First fill in the middle column. Then run each question and fill in the last one.
 
@@ -142,6 +142,16 @@ The model reads only the card. First fill in the middle column. Then run each qu
 | What is an API? |N|N|
 | Is session ten a combined one or separate? |Y|Y|
 | In lecture 3 of Harvard CS50, which language is taught? |N|N|
+
+### Test the card: get_itinerary
+
+| Question | Should it ask for the tool? | Did it? |
+| -------- | --------------------------- | ------- |
+| What are we doing on 2 Jan 2027? | Yes |  |
+| What's planned for the first day of our Kuching trip? | Yes |  |
+| What are the alternative options on 3 January? | Yes |  |
+| What's on the plan for 10 Jan 2027? | Yes (should return "nothing is planned") |  |
+| What is the best time of year to visit Sarawak? | No |  |
 
 ```bash
 python tool_call.py "Which tools do we use in the seventh class?"
