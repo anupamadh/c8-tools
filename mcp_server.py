@@ -25,11 +25,15 @@ def get_lecture(number: Annotated[int, "The lecture number, 1 to 19."]) -> dict:
 ITINERARY = "https://docs.google.com/spreadsheets/d/1b5zDSCA7XX4NmVQZKdEzKumQJAaVBodMc-Vm3UwUniU/export?format=csv&gid=0"
 
 @mcp.tool
-def get_itinerary(date: Annotated[str, "The trip date written like the sheet, e.g. 1 Jan 2027. The trip runs 1 to 4 Jan 2027."]) -> dict:
-    """Returns the Kuching, Sarawak trip plan for one day: the day, time, activity
-    and description of everything planned, including alternative options.
-    Use it when someone asks what is planned on a specific trip date.
-    Not for general questions about Sarawak."""
+def get_itinerary(
+    date: Annotated[str, "The trip date, always written as D Mon YYYY, e.g. 1 Jan 2027. "
+                         "Day 1 is 1 Jan 2027 and day 4 is 4 Jan 2027."]
+) -> dict:
+    """Returns the family's Kuching, Sarawak trip plan for one day (1 to 4 Jan 2027):
+    the day, time, activity and description of everything planned, including
+    alternative options. Use it when someone asks what is planned, what we are
+    doing, or what the options are on a specific trip date or trip day.
+    Not for packing, weather, travel tips or general questions about Sarawak."""
     plan = []
     for row in csv.reader(io.StringIO(requests.get(ITINERARY).text)):
         if row and row[0].strip().lower() == date.strip().lower():
