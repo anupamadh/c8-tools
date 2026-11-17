@@ -147,11 +147,11 @@ The model reads only the card. First fill in the middle column. Then run each qu
 
 | Question | Should it ask for the tool? | Did it? |
 | -------- | --------------------------- | ------- |
-| What are we doing on 2 Jan 2027? | Yes |  |
-| What's planned for the first day of our Kuching trip? | Yes |  |
-| What are the alternative options on 3 January? | Yes |  |
-| What's on the plan for 10 Jan 2027? | Yes (should return "nothing is planned") |  |
-| What is the best time of year to visit Sarawak? | No |  |
+| What are we doing on 2 Jan 2027? | Yes | Yes |
+| What's planned for the first day of our Kuching trip? | Yes | Yes |
+| What are the alternative options on 3 January? | Yes | Yes  |
+| What's on the plan for 10 Jan 2027? | Yes (should return "nothing is planned") | Yes Nothing is planned for 10 Jan 2027. The Kuching trip runs from 1–4 Jan 2027. |
+| What is the best time of year to visit Sarawak? | No | No |
 
 ```bash
 python tool_call.py "Which tools do we use in the seventh class?"
